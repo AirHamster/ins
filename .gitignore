@@ -1,0 +1,8 @@
+/libopencm3
+.ins.c.swn
+.ins.c.swo
+.ins.c.swp
+
+run.gdb
+debug.cfg
+core
