@@ -167,7 +167,7 @@ void tim1_trg_com_isr(void)
 		if (compare_time == 0){
 			upcount = 1;
 		}*/
-
+		//
 		/*timer_set_oc_value(TIM1, TIM_OC1, compare_time);*/
 
 		/* Toggle LED to indicate compare event. */
