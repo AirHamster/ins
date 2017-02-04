@@ -2,7 +2,14 @@
 .ins.c.swn
 .ins.c.swo
 .ins.c.swp
-
+.gdbinit
+STM32F103xx.svd
+gdb.py
+mpk
 run.gdb
 debug.cfg
 core
+.ins.c.swp
+.ins.c.swm
+.gitignore.swp
+.ins.c.swl
