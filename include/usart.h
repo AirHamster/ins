@@ -29,58 +29,47 @@ static void usart_setup(void)
 void usart1_isr(void)
 
 {
-	uint8_t data1 = (DEBUGVAL >> 24) & 0xff;
-	uint8_t data2 = (DEBUGVAL >> 16) & 0xff;
-	uint8_t data3 = (DEBUGVAL >> 8) & 0xff;
-	uint8_t data4 = (DEBUGVAL) & 0xff;
 	uint8_t tmp;
 	
+	 //Check if we were called because of RXNE. 
 	if (((USART_CR1(USART1) & USART_CR1_RXNEIE) != 0) &&
 	    ((USART_SR(USART1) & USART_SR_RXNE) != 0)) {
 
 		/* Indicate that we got data. */
 		gpio_toggle(GPIOC, LED1_PIN);
-
+		i2c1_read(MPU_ADDRESS, MPU_WHO_AM_I, &temp2, 1);
 		/* Retrieve the data from the peripheral. */
 		tmp = usart_recv(USART1);
-		usart_send_blocking(USART1, data1);
-		usart_send_blocking(USART1, data2);
-		usart_send_blocking(USART1, data3);
-		usart_send_blocking(USART1, data4);
-		 /*Disable the TXE interrupt as we don't need it anymore. */
-		/*USART_CR1(USART1) &= ~USART_CR1_TXEIE;*/
-		tmp = usart_recv(USART1);
+		usart_send_32(USART1, &temp, 1);
 	}
 
-	 /*Check if we were called because of TXE. */
-	/*if (((USART_CR1(USART1) & USART_CR1_TXEIE) != 0) &&*/
-	    /*((USART_SR(USART1) & USART_SR_TXE) != 0)) {*/
+	 //Check if we were called because of TXE. 
+	if (((USART_CR1(USART1) & USART_CR1_TXEIE) != 0) &&
+	    ((USART_SR(USART1) & USART_SR_TXE) != 0)) {
 		
-		/*usart_send_second(data2);*/
-		/*[>USART_CR1(USART1) &= ~USART_CR1_TXEIE;<]*/
-		/*[> Indicate that we are sending out data. <]*/
-		/*// gpio_toggle(GPIOA, GPIO7);*/
-
-		/*[> Put data into the transmit register. <]*/
-		/*[>usart_send(USART1, 0xffff);<]*/
-		/*[>usart_send_blocking(USART1, (TIM1_CR1));<]*/
-		/*[>usart_send(USART1, (TIM1_CR1>>16));<]*/
-		/*[>usart_send_blocking(USART1, (data2));<]*/
-		/*[>usart_send(USART1, (data1));<]*/
-		/*[> Disable the TXE interrupt as we don't need it anymore. <]*/
-		/*[>USART_CR1(USART1) &= ~USART_CR1_TXEIE;<]*/
-	/*}*/
+		if (usart1.lenth-- != 0){
+			usart_send(USART1, *usart1.data_pointer++);
+		}else{
+		 	//Disable the TXE interrupt as we don't need it anymore. 
+			USART_CR1(USART1) &= ~USART_CR1_TXEIE;
+			usart1.busy = 0;
+		}
+	}
 }
 
-void usart_send_first(uint16_t datatosend)
+void usart_send_32(uint32_t USART, uint32_t *data, uint8_t lenth)
 {
-	usart_send(USART1, datatosend);
-	/* Enable transmit interrupt so it sends back the data. */
-	USART_CR1(USART1) |= USART_CR1_TXEIE;
-}	
-
-void usart_send_second(uint16_t datatosend)
-{
-	USART_CR1(USART1) &= ~USART_CR1_TXEIE;
-	usart_send(USART1, datatosend);
+	while (usart1.busy);
+	usart1.busy = 1;	
+	//Divide 32bit to 8bit
+	usart1.data1 = (*data >> 24) & 0xff;
+	usart1.data2 = (*data >> 16) & 0xff;
+	usart1.data3 = (*data >> 8) & 0xff;
+	usart1.data4 = (*data) & 0xff;
+	usart1.lenth = lenth * 4;
+	usart1.data_pointer = &usart1.data1;	//
+	usart_send_blocking(USART, *usart1.data_pointer++);
+	usart1.lenth--;
+	//Enable TxE interrupt
+	USART_CR1(USART) |= USART_CR1_TXEIE;
 }

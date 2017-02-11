@@ -25,7 +25,7 @@ void tim_setup(void)
 	 * In our case, TIM2 on APB1 is running at double frequency, so this
 	 * sets the prescaler to have the timer run at 5kHz
 	 */
-	timer_set_prescaler(TIM1, 128);
+	timer_set_prescaler(TIM1, 0);
 
 	/* Disable preload. */
 	timer_disable_preload(TIM1);
@@ -53,6 +53,7 @@ void tim1_up_isr(void)
 	/* Clear update interrupt flag. */
 	timer_clear_flag(TIM1, TIM_SR_UIF);
 
+	//usart_send_blocking(USART1, I2C1_SR1);
 	/* Toggle LED to indicate compare event. */
 	gpio_set(LED1_PORT, LED1_PIN);
 }

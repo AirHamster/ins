@@ -27,4 +27,5 @@ ins.o: ins.c libopencm3//include/libopencm3/cm3/nvic.h \
  libopencm3//include/libopencm3/stm32/f1/usart.h \
  libopencm3//include/libopencm3/stm32/common/usart_common_f124.h \
  libopencm3//include/libopencm3/stm32/common/usart_common_all.h \
- include/gpio.h include/usart.h include/i2c.h include/timers.h
+ include/defines.h include/varables.h include/gpio.h include/usart.h \
+ include/i2c.h include/timers.h
