@@ -11,13 +11,14 @@ struct iic
 };
 struct usart
 {
+	uint32_t *global_pointer;
 	uint8_t *data_pointer;
 	uint8_t data1;
 	uint8_t data2;
 	uint8_t data3;
 	uint8_t data4;
 	uint8_t lenth;
-	uint8_t byte_number;
+	uint8_t byte_counter;
 	unsigned int busy:1;
 };
 	struct iic i2c;

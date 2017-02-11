@@ -31,10 +31,11 @@ void i2c1_ev_isr(void)
 	else if (i2c.r == 1){
 	if (i2c.rs == 0){
 
+			usart_send_32(USART1, &I2C1_SR2, 1);
 	/*Start send*/
 	if ((I2C_SR1(I2C1) & I2C_SR1_SB) != 0){
 		i2c_send_data(I2C1, (i2c.address & 0xfe));
-		usart_send(USART1, 's');
+		//usart_send(USART1, 's');
 		return;
 		}
 	 
@@ -86,18 +87,33 @@ void i2c1_er_isr(void)
 }
 void i2c1_setup(void)
 {
+	rcc_periph_clock_enable(RCC_I2C1);
 	i2c_peripheral_disable(I2C1);
-	//I2c on APB1 - 36MHz is maximum frequency
-	usart_send_blocking(USART1, I2C1_CR2);
-	i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_36MHZ); 
+	i2c_reset(I2C1);
 	i2c_set_standard_mode(I2C1);
-	i2c_enable_interrupt(I2C1, I2C_CR2_ITERREN);
-	i2c_set_ccr(I2C1, 360);	//36MHz/100kHz
-	i2c_set_trise(I2C1, 36);
+	i2c_enable_ack(I2C1);
+	i2c_set_dutycycle(I2C1, I2C_CCR_DUTY_DIV2); /* default, no need to do this really */
+			
+	/* Board specific settings based on time */
+	i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_36MHZ);
+	/* 24MHz / (100kHz * 2) */
+	i2c_set_ccr(I2C1, 180);
+	/* standard mode, freqMhz+1*/
+	i2c_set_trise(I2C1, 37);
+	/* End of board specific settings */
+
+	//i2c_peripheral_disable(I2C1);
+	////I2c on APB1 - 36MHz is maximum frequency
+	//usart_send_blocking(USART1, I2C1_CR2);
+	//i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_36MHZ); 
+	//i2c_set_standard_mode(I2C1);
+	//i2c_enable_interrupt(I2C1, I2C_CR2_ITERREN);
+	//i2c_set_ccr(I2C1, 360);	//36MHz/100kHz
+	//i2c_set_trise(I2C1, 36);
 	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 	nvic_enable_irq(NVIC_I2C1_ER_IRQ);
-	i2c_enable_interrupt(I2C1, I2C_CR2_ITEVTEN | I2C_CR2_ITEVTEN);
-	usart_send_blocking(USART1, I2C1_CR2>>8);
+	i2c_enable_interrupt(I2C1, I2C_CR2_ITERREN | I2C_CR2_ITEVTEN);
+	//usart_send_blocking(USART1, I2C1_CR2>>8);
 
 	i2c_peripheral_enable(I2C1);
 }
